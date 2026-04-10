@@ -84,9 +84,6 @@ export default function Login() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? '로그인 중...' : '로그인'}
                 </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  관리자: 사번 <strong>okhrd</strong>로 로그인
-                </p>
               </form>
             </TabsContent>
             <TabsContent value="signup">
