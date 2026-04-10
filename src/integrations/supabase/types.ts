@@ -14,16 +14,283 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          author_id: string | null
+          category: string
+          content: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      introduction_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          introduction_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          introduction_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          introduction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introduction_comments_introduction_id_fkey"
+            columns: ["introduction_id"]
+            isOneToOne: false
+            referencedRelation: "introductions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      introduction_likes: {
+        Row: {
+          created_at: string
+          id: string
+          introduction_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          introduction_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          introduction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introduction_likes_introduction_id_fkey"
+            columns: ["introduction_id"]
+            isOneToOne: false
+            referencedRelation: "introductions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      introductions: {
+        Row: {
+          age: string | null
+          blood_type: string | null
+          created_at: string
+          current_city: string | null
+          department: string | null
+          drinking_smoking: string | null
+          hobby: string | null
+          hometown: string | null
+          id: string
+          join_date: string | null
+          mbti: string | null
+          name: string
+          personality_cons: string | null
+          personality_pros: string | null
+          photo_url: string | null
+          playlist: string | null
+          position: string | null
+          promise_to_team: string | null
+          recent_happy: string | null
+          recent_sad: string | null
+          sub_photo_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: string | null
+          blood_type?: string | null
+          created_at?: string
+          current_city?: string | null
+          department?: string | null
+          drinking_smoking?: string | null
+          hobby?: string | null
+          hometown?: string | null
+          id?: string
+          join_date?: string | null
+          mbti?: string | null
+          name: string
+          personality_cons?: string | null
+          personality_pros?: string | null
+          photo_url?: string | null
+          playlist?: string | null
+          position?: string | null
+          promise_to_team?: string | null
+          recent_happy?: string | null
+          recent_sad?: string | null
+          sub_photo_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: string | null
+          blood_type?: string | null
+          created_at?: string
+          current_city?: string | null
+          department?: string | null
+          drinking_smoking?: string | null
+          hobby?: string | null
+          hometown?: string | null
+          id?: string
+          join_date?: string | null
+          mbti?: string | null
+          name?: string
+          personality_cons?: string | null
+          personality_pros?: string | null
+          photo_url?: string | null
+          playlist?: string | null
+          position?: string | null
+          promise_to_team?: string | null
+          recent_happy?: string | null
+          recent_sad?: string | null
+          sub_photo_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      participants: {
+        Row: {
+          batch: number | null
+          created_at: string
+          department: string | null
+          id: string
+          name: string
+          notes: string | null
+          position: string | null
+          room_assignment: string | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          batch?: number | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          position?: string | null
+          room_assignment?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          batch?: number | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          position?: string | null
+          room_assignment?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          department: string | null
+          display_name: string | null
+          id: string
+          position: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          display_name?: string | null
+          id?: string
+          position?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          display_name?: string | null
+          id?: string
+          position?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +417,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
