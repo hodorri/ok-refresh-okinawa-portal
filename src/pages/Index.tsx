@@ -12,10 +12,12 @@ export default function Index() {
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-accent p-8 text-primary-foreground md:p-12">
         <div className="relative z-10">
-          <p className="mb-2 text-sm font-medium opacity-90">OK금융그룹 인재개발팀</p>
-          <h1 className="mb-4 text-3xl font-bold md:text-4xl">2026 해외연수 포털</h1>
+          <p className="mb-2 text-sm font-medium opacity-90">OK금융그룹</p>
+          <h1 className="mb-4 text-3xl font-bold md:text-3xl">2026년 리프레시 해외연수 in Okinawa</h1>
           <p className="mb-6 max-w-xl text-lg opacity-90">
-            해외연수에 필요한 모든 정보를 한 곳에서 확인하세요. 자기소개서 작성, 일정 확인, 공지사항까지!
+            해외연수에 필요한 모든 정보를 한 곳에서 확인하세요.
+            <br />
+            자기소개서 작성, 일정 확인, 공지사항까지!
           </p>
           {!user ? (
             <Link to="/login">

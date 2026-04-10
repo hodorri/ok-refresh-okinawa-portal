@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-xl font-bold text-primary">OK!</span>
-            <span className="text-lg font-semibold text-foreground">해외연수 포털</span>
+            <span className="text-lg font-semibold text-foreground">Refresh </span>
           </Link>
 
           {/* Desktop nav */}
