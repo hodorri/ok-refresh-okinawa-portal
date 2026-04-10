@@ -1,91 +1,103 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Megaphone, Calendar, MapPin, FileText } from 'lucide-react';
+import { Users, Megaphone, Calendar, ArrowRight } from 'lucide-react';
+import okinawaCharacter from '@/assets/okinawa-character.png';
 
 export default function Index() {
   const { user } = useAuth();
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-accent p-8 text-primary-foreground md:p-12">
-        <div className="relative z-10">
-          <p className="mb-2 text-sm font-medium opacity-90">OK금융그룹</p>
-          <h1 className="mb-4 text-3xl font-bold md:text-3xl">2026년 리프레시 해외연수 in Okinawa</h1>
-          <p className="mb-6 max-w-xl text-lg opacity-90">
-            해외연수에 필요한 모든 정보를 한 곳에서 확인하세요.
-            <br />
-            자기소개서 작성, 일정 확인, 공지사항까지!
-          </p>
-          {!user ? (
-            <Link to="/login">
-              <Button size="lg" variant="secondary">
-                로그인하기
-              </Button>
-            </Link>
-          ) : (
-            <Link to="/introductions/new">
-              <Button size="lg" variant="secondary">
-                자기소개서 작성하기
-              </Button>
-            </Link>
-          )}
+    <div className="space-y-16">
+      {/* Hero Section - Toss-inspired clean hero */}
+      <section className="relative flex flex-col items-center pt-8 pb-4 text-center md:pt-16 md:pb-8">
+        {/* Character image */}
+        <div className="mb-8 animate-float">
+          <img
+            src={okinawaCharacter}
+            alt="오키나와 캐릭터"
+            className="h-40 w-auto drop-shadow-xl md:h-56"
+          />
         </div>
-        {/* Decorative circles */}
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-accent/20" />
-        <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-secondary/20" />
+
+        <p className="mb-3 text-sm font-semibold tracking-widest uppercase text-primary">
+          OK금융그룹
+        </p>
+        <h1 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+          2026년 리프레시 해외연수
+          <br />
+          <span className="text-primary">in Okinawa</span>
+        </h1>
+        <p className="mb-8 max-w-lg text-lg leading-relaxed text-muted-foreground md:text-xl">
+          해외연수에 필요한 모든 정보를 한 곳에서 확인하세요.
+          <br />
+          자기소개서 작성, 일정 확인, 공지사항까지!
+        </p>
+
+        {!user ? (
+          <Link to="/login">
+            <Button size="lg" className="h-14 rounded-2xl px-10 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5">
+              시작하기
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        ) : (
+          <Link to="/introductions/new">
+            <Button size="lg" className="h-14 rounded-2xl px-10 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5">
+              자기소개서 작성하기
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        )}
       </section>
 
-      {/* Quick links */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Feature Cards - Clean grid */}
+      <section className="grid gap-6 md:grid-cols-3">
         <Link to="/introductions" className="group">
-          <Card className="h-full transition-shadow hover:shadow-lg">
-            <CardHeader>
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Users className="h-5 w-5 text-primary" />
-              </div>
-              <CardTitle className="text-lg">자기소개</CardTitle>
-              <CardDescription>참가자들의 자기소개서를 확인하고 댓글과 좋아요를 남겨보세요</CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="relative overflow-hidden rounded-3xl bg-card p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-border/50">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <Users className="h-7 w-7 text-primary" />
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-foreground">자기소개</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              참가자들의 자기소개서를 확인하고 댓글과 좋아요를 남겨보세요
+            </p>
+            <div className="mt-5 flex items-center text-sm font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+              자세히 보기 <ArrowRight className="ml-1 h-4 w-4" />
+            </div>
+          </div>
         </Link>
 
         <Link to="/announcements" className="group">
-          <Card className="h-full transition-shadow hover:shadow-lg">
-            <CardHeader>
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10">
-                <Megaphone className="h-5 w-5 text-secondary" />
-              </div>
-              <CardTitle className="text-lg">공지사항</CardTitle>
-              <CardDescription>연수 일정, 준비사항, 방배정 등 중요 정보를 확인하세요</CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="relative overflow-hidden rounded-3xl bg-card p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-border/50">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary/10">
+              <Megaphone className="h-7 w-7 text-secondary" />
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-foreground">공지사항</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              연수 일정, 준비사항, 방배정 등 중요 정보를 확인하세요
+            </p>
+            <div className="mt-5 flex items-center text-sm font-semibold text-secondary opacity-0 transition-opacity group-hover:opacity-100">
+              자세히 보기 <ArrowRight className="ml-1 h-4 w-4" />
+            </div>
+          </div>
         </Link>
 
-        <Card className="h-full">
-          <CardHeader>
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-accent/20">
-              <MapPin className="h-5 w-5 text-accent-foreground" />
-            </div>
-            <CardTitle className="text-lg">연수 일정</CardTitle>
-            <CardDescription>상세 일정은 공지사항에서 확인하세요</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>일정 확인은 공지사항을 참고해주세요</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <span>준비사항 및 방배정 안내</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="relative overflow-hidden rounded-3xl bg-card p-8 shadow-sm border border-border/50">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15">
+            <Calendar className="h-7 w-7 text-accent" />
+          </div>
+          <h3 className="mb-2 text-xl font-bold text-foreground">연수 일정</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            상세 일정은 공지사항에서 확인하세요
+          </p>
+          <div className="mt-5 rounded-xl bg-muted/50 p-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              📍 오키나와 · 일정은 공지사항 참고
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
