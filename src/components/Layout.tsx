@@ -32,11 +32,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-primary">OK!</span>
-            <span className="text-lg font-semibold text-foreground">Refresh </span>
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          <Link to="/" className="flex items-center gap-1.5">
+            <span className="text-xl font-extrabold text-primary">OK!</span>
+            <span className="text-lg font-bold text-foreground">Refresh</span>
           </Link>
 
           {/* Desktop nav */}
@@ -45,13 +45,12 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                   isActive(item.to)
                     ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <item.icon className="h-4 w-4" />
                 {item.label}
               </Link>
             ))}
@@ -60,37 +59,38 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                     isActive(item.to)
                       ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <item.icon className="h-4 w-4" />
                   {item.label}
                 </Link>
               ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {user ? (
               <>
                 <span className="hidden text-sm text-muted-foreground md:inline">
                   {user.user_metadata?.display_name || user.email}
                 </span>
-                <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                <Button variant="ghost" size="icon" onClick={handleSignOut} className="rounded-full">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
             ) : (
-              <Button onClick={() => navigate('/login')} size="sm">
-                로그인
-              </Button>
+              <Link to="/login">
+                <Button size="sm" className="rounded-full px-5 font-semibold">
+                  로그인
+                </Button>
+              </Link>
             )}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="rounded-full md:hidden"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -100,14 +100,14 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* Mobile nav */}
         {mobileOpen && (
-          <div className="border-t bg-card p-4 md:hidden">
+          <div className="border-t border-border/50 bg-background p-4 md:hidden">
             <nav className="flex flex-col gap-1">
               {navItems.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
+                  className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                     isActive(item.to) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
                   }`}
                 >
@@ -121,7 +121,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
+                    className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                       isActive(item.to) ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
                     }`}
                   >
@@ -134,7 +134,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
     </div>
   );
 }
