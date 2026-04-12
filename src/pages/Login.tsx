@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +45,17 @@ export default function Login() {
       return;
     }
 
+    // 해외연수 대상자 확인
+    const { data: isValid, error: validateError } = await supabase.rpc('validate_employee_id', {
+      _employee_id: employeeId,
+    });
+
+    if (validateError || !isValid) {
+      toast.error('해외연수 대상자만 가입할 수 있습니다. 사번을 확인해주세요.');
+      setLoading(false);
+      return;
+    }
+
     const { error } = await signUp(toEmail(employeeId), password, {
       display_name: displayName,
       employee_id: employeeId,
@@ -52,7 +64,7 @@ export default function Login() {
     if (error) {
       toast.error('회원가입 실패: ' + error.message);
     } else {
-      toast.success('회원가입 완료!');
+      toast.success('회원가입 완료! 연수 정보를 확인하세요.');
       navigate('/');
     }
   };
@@ -63,7 +75,7 @@ export default function Login() {
         <CardHeader className="text-center">
           <div className="mb-2 text-2xl font-bold text-primary">OK!</div>
           <CardTitle className="text-xl">2026 해외연수 포털</CardTitle>
-          <CardDescription>로그인하여 연수 정보를 확인하세요</CardDescription>
+          <CardDescription>해외연수 대상자만 가입할 수 있습니다</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login">
@@ -75,7 +87,7 @@ export default function Login() {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-id">사번</Label>
-                  <Input id="login-id" name="employeeId" required placeholder="사번을 입력하세요" />
+                  <Input id="login-id" name="employeeId" required placeholder="고유사번을 입력하세요" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="login-password">비밀번호</Label>
@@ -94,7 +106,7 @@ export default function Login() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-id">사번</Label>
-                  <Input id="signup-id" name="employeeId" required placeholder="사번을 입력하세요" />
+                  <Input id="signup-id" name="employeeId" required placeholder="고유사번 (대상자 목록에 있는 사번)" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">비밀번호</Label>
@@ -103,6 +115,9 @@ export default function Login() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? '가입 중...' : '회원가입'}
                 </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  해외연수 대상자 명단에 등록된 사번만 가입 가능합니다
+                </p>
               </form>
             </TabsContent>
           </Tabs>

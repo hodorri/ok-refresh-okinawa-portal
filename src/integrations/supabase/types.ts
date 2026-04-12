@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       announcements: {
         Row: {
+          attachments: Json | null
           author_id: string | null
           category: string
           content: string
@@ -25,6 +26,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json | null
           author_id?: string | null
           category?: string
           content: string
@@ -34,6 +36,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json | null
           author_id?: string | null
           category?: string
           content?: string
@@ -185,43 +188,73 @@ export type Database = {
       }
       participants: {
         Row: {
+          age: string | null
+          attendance: string | null
           batch: number | null
+          category: string | null
+          company: string | null
           created_at: string
           department: string | null
+          employee_id: string | null
+          gender: string | null
           id: string
           name: string
           notes: string | null
+          passport_submitted: string | null
+          phone: string | null
           position: string | null
           room_assignment: string | null
           status: string | null
+          team: string | null
           updated_at: string
           user_id: string | null
+          work_area: string | null
         }
         Insert: {
+          age?: string | null
+          attendance?: string | null
           batch?: number | null
+          category?: string | null
+          company?: string | null
           created_at?: string
           department?: string | null
+          employee_id?: string | null
+          gender?: string | null
           id?: string
           name: string
           notes?: string | null
+          passport_submitted?: string | null
+          phone?: string | null
           position?: string | null
           room_assignment?: string | null
           status?: string | null
+          team?: string | null
           updated_at?: string
           user_id?: string | null
+          work_area?: string | null
         }
         Update: {
+          age?: string | null
+          attendance?: string | null
           batch?: number | null
+          category?: string | null
+          company?: string | null
           created_at?: string
           department?: string | null
+          employee_id?: string | null
+          gender?: string | null
           id?: string
           name?: string
           notes?: string | null
+          passport_submitted?: string | null
+          phone?: string | null
           position?: string | null
           room_assignment?: string | null
           status?: string | null
+          team?: string | null
           updated_at?: string
           user_id?: string | null
+          work_area?: string | null
         }
         Relationships: []
       }
@@ -285,6 +318,12 @@ export type Database = {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      validate_employee_id: {
+        Args: {
+          _employee_id: string
         }
         Returns: boolean
       }

@@ -39,6 +39,7 @@ function AppRoutes() {
       <Route path="/" element={<Layout><Index /></Layout>} />
       <Route path="/introductions" element={<Layout><IntroductionList /></Layout>} />
       <Route path="/introductions/new" element={<ProtectedRoute><Layout><IntroductionForm /></Layout></ProtectedRoute>} />
+      <Route path="/introductions/:id/edit" element={<ProtectedRoute><Layout><IntroductionForm /></Layout></ProtectedRoute>} />
       <Route path="/introductions/:id" element={<Layout><IntroductionDetail /></Layout>} />
       <Route path="/announcements" element={<Layout><Announcements /></Layout>} />
       <Route path="/admin/announcements" element={<AdminRoute><Layout><AdminAnnouncements /></Layout></AdminRoute>} />

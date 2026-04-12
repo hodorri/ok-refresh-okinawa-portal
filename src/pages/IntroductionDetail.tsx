@@ -7,15 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Heart, MessageCircle, Send, Trash2, Music, Target } from 'lucide-react';
+import { Heart, MessageCircle, Send, Trash2, Pencil, Music, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function IntroductionDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [comment, setComment] = useState('');
 
   const { data: intro, isLoading } = useQuery({
@@ -39,13 +42,22 @@ export default function IntroductionDetail() {
   const { data: comments } = useQuery({
     queryKey: ['comments', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: commentsData, error } = await supabase
         .from('introduction_comments')
-        .select('*, profiles:user_id(display_name, avatar_url)')
+        .select('*')
         .eq('introduction_id', id!)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return data;
+      if (!commentsData?.length) return [];
+      const userIds = [...new Set(commentsData.map((c) => c.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+      return commentsData.map((c) => ({
+        ...c,
+        profiles: profiles?.find((p) => p.user_id === c.user_id) || null,
+      }));
     },
   });
 
@@ -92,6 +104,19 @@ export default function IntroductionDetail() {
     },
   });
 
+  const deleteIntroduction = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('introductions').delete().eq('id', id!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['introductions'] });
+      toast.success('자기소개가 삭제되었습니다');
+      navigate('/introductions');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   if (isLoading) {
     return (
       <div className="mx-auto max-w-3xl space-y-6">
@@ -129,7 +154,31 @@ export default function IntroductionDetail() {
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Header card */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-primary via-primary/80 to-accent p-6 text-center text-primary-foreground">
+        <div className="bg-gradient-to-r from-primary via-primary/80 to-accent p-6 text-center text-primary-foreground relative">
+          {(isAdmin || intro.user_id === user?.id) && (
+            <div className="absolute right-4 top-4 flex gap-2">
+              {(intro.user_id === user?.id || isAdmin) && (
+                <Link to={`/introductions/${id}/edit`}>
+                  <Button variant="secondary" size="sm">
+                    <Pencil className="mr-1 h-4 w-4" />
+                    수정
+                  </Button>
+                </Link>
+              )}
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (window.confirm('이 자기소개를 삭제하시겠습니까?')) {
+                    deleteIntroduction.mutate();
+                  }
+                }}
+              >
+                <Trash2 className="mr-1 h-4 w-4" />
+                삭제
+              </Button>
+            </div>
+          )}
           <p className="text-sm font-medium opacity-80">2026 해외연수</p>
           <h1 className="text-2xl font-bold">참가자 자기소개서</h1>
         </div>
