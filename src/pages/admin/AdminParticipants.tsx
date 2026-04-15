@@ -7,27 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, Search, ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
-
-const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { label: '대기', variant: 'secondary' },
-  confirmed: { label: '확정', variant: 'default' },
-  cancelled: { label: '취소', variant: 'destructive' },
-};
-
-const passportLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  '제출': { label: '제출', variant: 'default' },
-  '미제출': { label: '미제출', variant: 'destructive' },
-  '통화완료': { label: '통화완료', variant: 'secondary' },
-};
 
 export default function AdminParticipants() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [batchFilter, setBatchFilter] = useState<string>('all');
+  const [batchSort, setBatchSort] = useState<'asc' | 'desc' | null>('asc');
+  const [roomDrafts, setRoomDrafts] = useState<Record<string, string>>({});
 
   const { data: participants } = useQuery({
     queryKey: ['participants'],
@@ -51,7 +42,6 @@ export default function AdminParticipants() {
         phone: formData.get('phone') as string,
         batch: parseInt(formData.get('batch') as string) || 1,
         room_assignment: formData.get('room') as string,
-        passport_submitted: '미제출',
         status: 'pending',
       });
       if (error) throw error;
@@ -76,7 +66,7 @@ export default function AdminParticipants() {
   });
 
   const updateField = useMutation({
-    mutationFn: async ({ id, field, value }: { id: string; field: string; value: string }) => {
+    mutationFn: async ({ id, field, value }: { id: string; field: string; value: string | number }) => {
       const { error } = await supabase.from('participants').update({ [field]: value }).eq('id', id);
       if (error) throw error;
     },
@@ -88,23 +78,36 @@ export default function AdminParticipants() {
     create.mutate(new FormData(e.currentTarget));
   };
 
-  const filtered = participants?.filter((p) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(s) ||
-      p.employee_id?.includes(s) ||
-      p.department?.toLowerCase().includes(s) ||
-      p.team?.toLowerCase().includes(s) ||
-      p.phone?.includes(s)
-    );
-  });
+  const toggleBatchSort = () => {
+    setBatchSort((prev) => (prev === 'asc' ? 'desc' : prev === 'desc' ? null : 'asc'));
+  };
+
+  const filtered = participants
+    ?.filter((p) => {
+      if (batchFilter !== 'all' && String(p.batch) !== batchFilter) return false;
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (
+        p.name.toLowerCase().includes(s) ||
+        p.employee_id?.includes(s) ||
+        p.department?.toLowerCase().includes(s) ||
+        p.team?.toLowerCase().includes(s) ||
+        p.phone?.includes(s)
+      );
+    })
+    .sort((a, b) => {
+      if (!batchSort) return 0;
+      const av = a.batch ?? 0;
+      const bv = b.batch ?? 0;
+      if (av === bv) return a.name.localeCompare(b.name, 'ko');
+      return batchSort === 'asc' ? av - bv : bv - av;
+    });
 
   const stats = {
     total: participants?.length || 0,
+    batch1: participants?.filter((p) => p.batch === 1).length || 0,
+    batch2: participants?.filter((p) => p.batch === 2).length || 0,
     confirmed: participants?.filter((p) => p.status === 'confirmed').length || 0,
-    cancelled: participants?.filter((p) => p.status === 'cancelled').length || 0,
-    passportDone: participants?.filter((p) => p.passport_submitted === '제출').length || 0,
   };
 
   return (
@@ -166,46 +169,32 @@ export default function AdminParticipants() {
         </Dialog>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">전체 대상자</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-green-600">{stats.confirmed}</p>
-            <p className="text-xs text-muted-foreground">참석 확정</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
-            <p className="text-xs text-muted-foreground">불참</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">{stats.passportDone}/{stats.total}</p>
-            <p className="text-xs text-muted-foreground">여권 제출</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-3 gap-3">
+        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{stats.total}</p><p className="text-xs text-muted-foreground">전체 대상자</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-600">{stats.batch1}</p><p className="text-xs text-muted-foreground">1차수</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-purple-600">{stats.batch2}</p><p className="text-xs text-muted-foreground">2차수</p></CardContent></Card>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="이름, 부서, 팀, 핸드폰으로 검색..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      <div className="flex flex-col gap-3 md:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="이름, 부서, 팀, 핸드폰으로 검색..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={batchFilter} onValueChange={setBatchFilter}>
+          <SelectTrigger className="md:w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 차수</SelectItem>
+            <SelectItem value="1">1차수</SelectItem>
+            <SelectItem value="2">2차수</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Table */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -217,10 +206,18 @@ export default function AdminParticipants() {
                   <TableHead>부서/팀</TableHead>
                   <TableHead>직급</TableHead>
                   <TableHead>핸드폰</TableHead>
-                  <TableHead>차수</TableHead>
+                  <TableHead>
+                    <button
+                      type="button"
+                      onClick={toggleBatchSort}
+                      className="flex items-center gap-1 hover:text-foreground"
+                    >
+                      차수
+                      <ArrowUpDown className="h-3 w-3" />
+                      {batchSort && <span className="text-xs text-muted-foreground">({batchSort === 'asc' ? '↑' : '↓'})</span>}
+                    </button>
+                  </TableHead>
                   <TableHead>방</TableHead>
-                  <TableHead>여권</TableHead>
-                  <TableHead>상태</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -228,58 +225,39 @@ export default function AdminParticipants() {
                 {filtered?.map((p) => (
                   <TableRow key={p.id} className={p.status === 'cancelled' ? 'opacity-50' : ''}>
                     <TableCell className="text-xs text-muted-foreground">{p.employee_id}</TableCell>
-                    <TableCell className="font-medium whitespace-nowrap">{p.name}</TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        {p.name}
+                        {p.category === '스탭' && (
+                          <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">스탭</Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-xs">
                       <div>{p.department}</div>
                       {p.team && <div className="text-muted-foreground">{p.team}</div>}
                     </TableCell>
                     <TableCell>{p.position}</TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{p.phone}</TableCell>
+                    <TableCell className="whitespace-nowrap">{p.batch ? `${p.batch}차수` : '-'}</TableCell>
                     <TableCell>
-                      <Select
-                        value={String(p.batch || 1)}
-                        onValueChange={(v) => updateField.mutate({ id: p.id, field: 'batch', value: v })}
-                      >
-                        <SelectTrigger className="h-8 w-[65px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1차</SelectItem>
-                          <SelectItem value="2">2차</SelectItem>
-                          <SelectItem value="3">3차</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>{p.room_assignment}</TableCell>
-                    <TableCell>
-                      <Select
-                        value={p.passport_submitted || '미제출'}
-                        onValueChange={(v) => updateField.mutate({ id: p.id, field: 'passport_submitted', value: v })}
-                      >
-                        <SelectTrigger className="h-8 w-[90px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="제출">제출</SelectItem>
-                          <SelectItem value="미제출">미제출</SelectItem>
-                          <SelectItem value="통화완료">통화완료</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={p.status || 'pending'}
-                        onValueChange={(v) => updateField.mutate({ id: p.id, field: 'status', value: v })}
-                      >
-                        <SelectTrigger className="h-8 w-[80px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">대기</SelectItem>
-                          <SelectItem value="confirmed">확정</SelectItem>
-                          <SelectItem value="cancelled">취소</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        className="h-8 w-[110px]"
+                        placeholder="방 입력"
+                        value={roomDrafts[p.id] ?? p.room_assignment ?? ''}
+                        onChange={(e) => setRoomDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                        onBlur={(e) => {
+                          const v = e.target.value;
+                          if (v !== (p.room_assignment ?? '')) {
+                            updateField.mutate({ id: p.id, field: 'room_assignment', value: v });
+                          }
+                          setRoomDrafts((prev) => {
+                            const next = { ...prev };
+                            delete next[p.id];
+                            return next;
+                          });
+                        }}
+                      />
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
@@ -292,7 +270,7 @@ export default function AdminParticipants() {
                 ))}
                 {!filtered?.length && (
                   <TableRow>
-                    <TableCell colSpan={10} className="py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
                       {search ? '검색 결과가 없습니다' : '등록된 대상자가 없습니다'}
                     </TableCell>
                   </TableRow>

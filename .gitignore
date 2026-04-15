@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local data / source fonts (ttf copies live in public/fonts)
+*.csv
+/font/

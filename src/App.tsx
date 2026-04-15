@@ -37,11 +37,11 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Layout><Index /></Layout>} />
-      <Route path="/introductions" element={<Layout><IntroductionList /></Layout>} />
+      <Route path="/introductions" element={<ProtectedRoute><Layout><IntroductionList /></Layout></ProtectedRoute>} />
       <Route path="/introductions/new" element={<ProtectedRoute><Layout><IntroductionForm /></Layout></ProtectedRoute>} />
       <Route path="/introductions/:id/edit" element={<ProtectedRoute><Layout><IntroductionForm /></Layout></ProtectedRoute>} />
-      <Route path="/introductions/:id" element={<Layout><IntroductionDetail /></Layout>} />
-      <Route path="/announcements" element={<Layout><Announcements /></Layout>} />
+      <Route path="/introductions/:id" element={<ProtectedRoute><Layout><IntroductionDetail /></Layout></ProtectedRoute>} />
+      <Route path="/announcements" element={<ProtectedRoute><Layout><Announcements /></Layout></ProtectedRoute>} />
       <Route path="/admin/announcements" element={<AdminRoute><Layout><AdminAnnouncements /></Layout></AdminRoute>} />
       <Route path="/admin/participants" element={<AdminRoute><Layout><AdminParticipants /></Layout></AdminRoute>} />
       <Route path="*" element={<NotFound />} />

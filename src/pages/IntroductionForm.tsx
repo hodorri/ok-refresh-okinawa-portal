@@ -17,7 +17,6 @@ export default function IntroductionForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [subPhotoFile, setSubPhotoFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     name: '',
     department: '',
@@ -53,13 +52,17 @@ export default function IntroductionForm() {
   const { data: participant } = useQuery({
     queryKey: ['my-participant', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('participants')
-        .select('*')
-        .eq('user_id', user!.id)
-        .single();
-      if (error) return null;
-      return data;
+      // 1) user_id로 조회
+      const byUserId = await supabase.from('participants').select('*').eq('user_id', user!.id).maybeSingle();
+      if (byUserId.data) return byUserId.data;
+      // 2) 가입 시 저장된 사번으로 조회 (마이그레이션 후 링크 복구)
+      const employeeId = (user!.user_metadata as any)?.employee_id;
+      if (!employeeId) return null;
+      const byEmpId = await supabase.from('participants').select('*').eq('employee_id', employeeId).maybeSingle();
+      if (byEmpId.data && !byEmpId.data.user_id) {
+        await supabase.from('participants').update({ user_id: user!.id }).eq('id', byEmpId.data.id);
+      }
+      return byEmpId.data ?? null;
     },
     enabled: !isEdit && !!user,
   });
@@ -122,15 +125,16 @@ export default function IntroductionForm() {
 
     try {
       let photoUrl = isEdit ? existing?.photo_url : null;
-      let subPhotoUrl = isEdit ? existing?.sub_photo_url : null;
 
       if (photoFile) photoUrl = await uploadPhoto(photoFile, 'photos');
-      if (subPhotoFile) subPhotoUrl = await uploadPhoto(subPhotoFile, 'sub-photos');
+
+      if (!isEdit && !photoUrl) {
+        throw new Error('프로필 사진을 첨부해주세요');
+      }
 
       const payload = {
         ...form,
         photo_url: photoUrl,
-        sub_photo_url: subPhotoUrl,
       };
 
       if (isEdit) {
@@ -172,36 +176,36 @@ export default function IntroductionForm() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>이름 *</Label>
-              <Input value={form.name} onChange={(e) => updateField('name', e.target.value)} required placeholder="홍길동" />
+              <Label>이름</Label>
+              <Input value={form.name} readOnly disabled className="bg-muted" />
             </div>
             <div className="space-y-2">
               <Label>부서</Label>
-              <Input value={form.department} onChange={(e) => updateField('department', e.target.value)} placeholder="인재개발팀" />
+              <Input value={form.department} readOnly disabled className="bg-muted" />
             </div>
             <div className="space-y-2">
               <Label>직급</Label>
-              <Input value={form.position} onChange={(e) => updateField('position', e.target.value)} placeholder="팀장" />
+              <Input value={form.position} readOnly disabled className="bg-muted" />
             </div>
             <div className="space-y-2">
               <Label>나이(만)</Label>
-              <Input value={form.age} onChange={(e) => updateField('age', e.target.value)} placeholder="30살" />
+              <Input value={form.age} readOnly disabled className="bg-muted" />
             </div>
             <div className="space-y-2">
-              <Label>고향</Label>
-              <Input value={form.hometown} onChange={(e) => updateField('hometown', e.target.value)} placeholder="서울" />
+              <Label>고향 *</Label>
+              <Input value={form.hometown} onChange={(e) => updateField('hometown', e.target.value)} required placeholder="서울" />
             </div>
             <div className="space-y-2">
-              <Label>현재 사는 곳</Label>
-              <Input value={form.current_city} onChange={(e) => updateField('current_city', e.target.value)} placeholder="인덕원" />
+              <Label>현재 사는 곳 *</Label>
+              <Input value={form.current_city} onChange={(e) => updateField('current_city', e.target.value)} required placeholder="인덕원" />
             </div>
             <div className="space-y-2">
-              <Label>입사일자</Label>
-              <Input value={form.join_date} onChange={(e) => updateField('join_date', e.target.value)} placeholder="2019.07.31" />
+              <Label>입사일자 *</Label>
+              <Input value={form.join_date} onChange={(e) => updateField('join_date', e.target.value)} required placeholder="2019.07.31" />
             </div>
             <div className="space-y-2">
-              <Label>주량 & 흡연</Label>
-              <Input value={form.drinking_smoking} onChange={(e) => updateField('drinking_smoking', e.target.value)} placeholder="소주 한 병 / 비흡연" />
+              <Label>주량 & 흡연 *</Label>
+              <Input value={form.drinking_smoking} onChange={(e) => updateField('drinking_smoking', e.target.value)} required placeholder="소주 한 병 / 비흡연" />
             </div>
           </CardContent>
         </Card>
@@ -213,32 +217,32 @@ export default function IntroductionForm() {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>MBTI</Label>
-              <Input value={form.mbti} onChange={(e) => updateField('mbti', e.target.value)} placeholder="ISFJ" />
+              <Label>MBTI *</Label>
+              <Input value={form.mbti} onChange={(e) => updateField('mbti', e.target.value)} required placeholder="ISFJ" />
             </div>
             <div className="space-y-2">
-              <Label>혈액형</Label>
-              <Input value={form.blood_type} onChange={(e) => updateField('blood_type', e.target.value)} placeholder="A형" />
+              <Label>혈액형 *</Label>
+              <Input value={form.blood_type} onChange={(e) => updateField('blood_type', e.target.value)} required placeholder="A형" />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label>성격 장점</Label>
-              <Input value={form.personality_pros} onChange={(e) => updateField('personality_pros', e.target.value)} placeholder="친절함" />
+              <Label>성격 장점 *</Label>
+              <Input value={form.personality_pros} onChange={(e) => updateField('personality_pros', e.target.value)} required placeholder="친절함" />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label>성격 단점</Label>
-              <Input value={form.personality_cons} onChange={(e) => updateField('personality_cons', e.target.value)} placeholder="변화를 좋아하지 않음" />
+              <Label>성격 단점 *</Label>
+              <Input value={form.personality_cons} onChange={(e) => updateField('personality_cons', e.target.value)} required placeholder="변화를 좋아하지 않음" />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label>근래 기뻤던 일</Label>
-              <Textarea value={form.recent_happy} onChange={(e) => updateField('recent_happy', e.target.value)} placeholder="최근 기뻤던 일을 적어주세요" />
+              <Label>근래 기뻤던 일 *</Label>
+              <Textarea value={form.recent_happy} onChange={(e) => updateField('recent_happy', e.target.value)} required placeholder="최근 기뻤던 일을 적어주세요" />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label>근래 슬펐던 일</Label>
-              <Textarea value={form.recent_sad} onChange={(e) => updateField('recent_sad', e.target.value)} placeholder="최근 슬펐던 일을 적어주세요" />
+              <Label>근래 슬펐던 일 *</Label>
+              <Textarea value={form.recent_sad} onChange={(e) => updateField('recent_sad', e.target.value)} required placeholder="최근 슬펐던 일을 적어주세요" />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label>요즘 관심사 또는 취미</Label>
-              <Input value={form.hobby} onChange={(e) => updateField('hobby', e.target.value)} placeholder="여행" />
+              <Label>요즘 관심사 또는 취미 *</Label>
+              <Input value={form.hobby} onChange={(e) => updateField('hobby', e.target.value)} required placeholder="여행" />
             </div>
           </CardContent>
         </Card>
@@ -250,20 +254,16 @@ export default function IntroductionForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>여행 Playlist</Label>
-              <Input value={form.playlist} onChange={(e) => updateField('playlist', e.target.value)} placeholder="블랙핑크 - 뛰어" />
+              <Label>여행 Playlist *</Label>
+              <Input value={form.playlist} onChange={(e) => updateField('playlist', e.target.value)} required placeholder="블랙핑크 - 뛰어" />
             </div>
             <div className="space-y-2">
-              <Label>조원들에게 '이것만은 지킬 수 있다!'</Label>
-              <Input value={form.promise_to_team} onChange={(e) => updateField('promise_to_team', e.target.value)} placeholder="시간약속 철저" />
+              <Label>조원들에게 '이것만은 지킬 수 있다!' *</Label>
+              <Input value={form.promise_to_team} onChange={(e) => updateField('promise_to_team', e.target.value)} required placeholder="시간약속 철저" />
             </div>
             <div className="space-y-2">
-              <Label>프로필 사진 {isEdit && existing?.photo_url && '(변경하지 않으면 기존 사진 유지)'}</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} />
-            </div>
-            <div className="space-y-2">
-              <Label>자유로운 나의 모습 사진 {isEdit && existing?.sub_photo_url && '(변경하지 않으면 기존 사진 유지)'}</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setSubPhotoFile(e.target.files?.[0] || null)} />
+              <Label>프로필 사진 {isEdit ? (existing?.photo_url && '(변경하지 않으면 기존 사진 유지)') : '*'}</Label>
+              <Input type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} required={!isEdit} />
             </div>
           </CardContent>
         </Card>
