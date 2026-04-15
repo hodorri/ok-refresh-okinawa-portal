@@ -33,7 +33,9 @@ export default function IntroductionForm() {
     recent_happy: '',
     recent_sad: '',
     hobby: '',
-    playlist: '',
+    playlist_artist: '',
+    playlist_title: '',
+    playlist_url: '',
     promise_to_team: '',
   });
 
@@ -85,7 +87,9 @@ export default function IntroductionForm() {
         recent_happy: existing.recent_happy || '',
         recent_sad: existing.recent_sad || '',
         hobby: existing.hobby || '',
-        playlist: existing.playlist || '',
+        playlist_artist: existing.playlist_artist || '',
+        playlist_title: existing.playlist_title || '',
+        playlist_url: existing.playlist_url || '',
         promise_to_team: existing.promise_to_team || '',
       });
     }
@@ -254,8 +258,12 @@ export default function IntroductionForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>여행 Playlist * (YouTube 링크 붙여넣으면 클릭 가능)</Label>
-              <Input value={form.playlist} onChange={(e) => updateField('playlist', e.target.value)} required placeholder="https://youtube.com/playlist?list=... 또는 블랙핑크 - 뛰어" />
+              <Label>여행 Playlist *</Label>
+              <div className="grid gap-2 md:grid-cols-3">
+                <Input value={form.playlist_artist} onChange={(e) => updateField('playlist_artist', e.target.value)} required placeholder="가수 (예: 블랙핑크)" />
+                <Input value={form.playlist_title} onChange={(e) => updateField('playlist_title', e.target.value)} required placeholder="제목 (예: 뛰어)" />
+                <Input type="url" value={form.playlist_url} onChange={(e) => updateField('playlist_url', e.target.value)} required placeholder="YouTube 링크" />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>조원들에게 '이것만은 지킬 수 있다!' *</Label>

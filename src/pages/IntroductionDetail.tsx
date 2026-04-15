@@ -188,7 +188,9 @@ export default function IntroductionDetail() {
     { icon: Sparkles, label: '요즘 관심사 또는 취미', value: intro.hobby, color: 'text-fuchsia-600', bg: 'bg-fuchsia-50' },
   ];
 
-  const playlistUrl = intro.playlist && /^https?:\/\//i.test(intro.playlist.trim()) ? intro.playlist.trim() : null;
+  const playlistUrl = intro.playlist_url && /^https?:\/\//i.test(intro.playlist_url.trim()) ? intro.playlist_url.trim() : null;
+  const playlistLabel = [intro.playlist_artist, intro.playlist_title].filter(Boolean).join(' - ') || intro.playlist;
+  const hasPlaylist = !!(intro.playlist_artist || intro.playlist_title || intro.playlist_url || intro.playlist);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -303,7 +305,7 @@ export default function IntroductionDetail() {
 
       {/* Playlist & Promise */}
       <div className="grid gap-3 md:grid-cols-2">
-        {intro.playlist && (
+        {hasPlaylist && (
           <Card className="group transition hover:shadow-md">
             <CardContent className="p-0">
               {playlistUrl ? (
@@ -318,8 +320,8 @@ export default function IntroductionDetail() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[11px] uppercase tracking-wide text-muted-foreground">여행 Playlist</p>
-                    <p className="flex items-center gap-1 break-all font-medium text-primary group-hover:underline">
-                      {playlistUrl}
+                    <p className="flex items-center gap-1 break-words font-medium text-primary group-hover:underline">
+                      {playlistLabel || playlistUrl}
                       <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" />
                     </p>
                   </div>
@@ -331,7 +333,7 @@ export default function IntroductionDetail() {
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-muted-foreground">여행 Playlist</p>
-                    <p className="font-medium">{intro.playlist}</p>
+                    <p className="font-medium">{playlistLabel}</p>
                   </div>
                 </div>
               )}
