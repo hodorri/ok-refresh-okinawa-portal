@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Heart, MessageCircle, Send, Trash2, Pencil, Music, Target } from 'lucide-react';
+import { Heart, MessageCircle, Send, Trash2, Pencil, Music, Target, MapPin, Home, Calendar, Wine, Brain, Droplet, ThumbsUp, ThumbsDown, Smile, Frown, Sparkles, Cake, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -134,21 +134,27 @@ export default function IntroductionDetail() {
   if (!intro) return <p className="text-center text-muted-foreground">자기소개를 찾을 수 없습니다.</p>;
 
   const profileItems = [
-    { label: '나이(만)', value: intro.age },
-    { label: '고향', value: intro.hometown },
-    { label: '현재 사는 곳', value: intro.current_city },
-    { label: '입사일자', value: intro.join_date },
-    { label: '주량 & 흡연', value: intro.drinking_smoking },
+    { icon: Cake, label: '나이', value: intro.age, color: 'text-pink-500', bg: 'bg-pink-50' },
+    { icon: Home, label: '고향', value: intro.hometown, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { icon: MapPin, label: '현재 사는 곳', value: intro.current_city, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { icon: Calendar, label: '입사일자', value: intro.join_date, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { icon: Wine, label: '주량 & 흡연', value: intro.drinking_smoking, color: 'text-rose-500', bg: 'bg-rose-50' },
   ];
 
-  const tmiItems = [
-    { label: 'MBTI / 혈액형', value: [intro.mbti, intro.blood_type].filter(Boolean).join(' / ') },
-    { label: '성격 장점', value: intro.personality_pros },
-    { label: '성격 단점', value: intro.personality_cons },
-    { label: '근래 기뻤던 일', value: intro.recent_happy },
-    { label: '근래 슬펐던 일', value: intro.recent_sad },
-    { label: '요즘 관심사 또는 취미', value: intro.hobby },
+  const tmiPairs = [
+    { icon: Brain, label: 'MBTI', value: intro.mbti, color: 'text-violet-500', bg: 'bg-violet-50' },
+    { icon: Droplet, label: '혈액형', value: intro.blood_type, color: 'text-red-500', bg: 'bg-red-50' },
   ];
+
+  const tmiLong = [
+    { icon: ThumbsUp, label: '성격 장점', value: intro.personality_pros, color: 'text-green-600', bg: 'bg-green-50' },
+    { icon: ThumbsDown, label: '성격 단점', value: intro.personality_cons, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { icon: Smile, label: '근래 기뻤던 일', value: intro.recent_happy, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+    { icon: Frown, label: '근래 슬펐던 일', value: intro.recent_sad, color: 'text-sky-600', bg: 'bg-sky-50' },
+    { icon: Sparkles, label: '요즘 관심사 또는 취미', value: intro.hobby, color: 'text-fuchsia-600', bg: 'bg-fuchsia-50' },
+  ];
+
+  const playlistUrl = intro.playlist && /^https?:\/\//i.test(intro.playlist.trim()) ? intro.playlist.trim() : null;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -183,90 +189,129 @@ export default function IntroductionDetail() {
           <h1 className="text-2xl font-bold">참가자 자기소개서</h1>
         </div>
         <CardContent className="p-6">
-          <div className="flex flex-col items-center gap-6 md:flex-row md:items-start">
+          <div className="flex flex-col items-center gap-4">
+            <Avatar className="h-32 w-32 ring-4 ring-primary/20 ring-offset-4">
+              <AvatarImage src={intro.photo_url || ''} />
+              <AvatarFallback className="bg-primary/10 text-2xl font-bold text-primary">
+                {intro.name.slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
             <div className="text-center">
-              <Avatar className="mx-auto h-32 w-32 ring-4 ring-primary/20 ring-offset-4">
-                <AvatarImage src={intro.photo_url || ''} />
-                <AvatarFallback className="bg-primary/10 text-2xl font-bold text-primary">
-                  {intro.name.slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <p className="mt-3 text-sm text-muted-foreground">{intro.department}</p>
-              <p className="text-lg font-bold text-primary">{intro.name}</p>
+              <p className="text-xs text-muted-foreground">{intro.department}</p>
+              <p className="text-2xl font-bold text-primary">{intro.name}</p>
               <p className="text-sm text-muted-foreground">{intro.position}</p>
             </div>
-            <div className="flex-1">
-              <h2 className="mb-3 text-lg font-bold text-primary">나의 프로필</h2>
-              <div className="space-y-2">
-                {profileItems.map(
-                  (item) =>
-                    item.value && (
-                      <div key={item.label} className="flex gap-2 text-sm">
-                        <span className="min-w-[100px] font-medium">{item.label} :</span>
-                        <span className="text-muted-foreground">{item.value}</span>
-                      </div>
-                    ),
-                )}
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* TMI card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-primary">나의 TMI</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-6 md:flex-row">
-            <div className="flex-1 space-y-2">
-              {tmiItems.map(
-                (item) =>
-                  item.value && (
-                    <div key={item.label} className="text-sm">
-                      <span className="font-medium">{item.label} : </span>
-                      <span className="text-muted-foreground">{item.value}</span>
+      {/* Profile grid */}
+      <div>
+        <h2 className="mb-3 text-base font-bold text-primary">나의 프로필</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {profileItems.map(
+            (item) =>
+              item.value && (
+                <Card key={item.label} className="transition hover:shadow-md">
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${item.bg}`}>
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
                     </div>
-                  ),
-              )}
-            </div>
-            {intro.sub_photo_url && (
-              <div className="flex-shrink-0">
-                <img
-                  src={intro.sub_photo_url}
-                  alt="서브 사진"
-                  className="h-48 w-48 rounded-lg object-cover"
-                />
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                    <div className="min-w-0">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                      <p className="break-words font-medium">{item.value}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ),
+          )}
+        </div>
+      </div>
+
+      {/* TMI */}
+      <div>
+        <h2 className="mb-3 text-base font-bold text-primary">나의 TMI</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {tmiPairs.map(
+            (item) =>
+              item.value && (
+                <Card key={item.label} className="transition hover:shadow-md">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${item.bg}`}>
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                      <p className="text-lg font-bold">{item.value}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ),
+          )}
+          {tmiLong.map(
+            (item) =>
+              item.value && (
+                <Card key={item.label} className="sm:col-span-2 transition hover:shadow-md">
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${item.bg}`}>
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                      <p className="whitespace-pre-wrap break-words leading-relaxed">{item.value}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ),
+          )}
+        </div>
+      </div>
 
       {/* Playlist & Promise */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         {intro.playlist && (
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Music className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">여행 Playlist</p>
-                <p className="font-medium">{intro.playlist}</p>
-              </div>
+          <Card className="group transition hover:shadow-md">
+            <CardContent className="p-0">
+              {playlistUrl ? (
+                <a
+                  href={playlistUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4"
+                >
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-50">
+                    <Music className="h-5 w-5 text-red-500" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">여행 Playlist</p>
+                    <p className="flex items-center gap-1 break-all font-medium text-primary group-hover:underline">
+                      {playlistUrl}
+                      <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" />
+                    </p>
+                  </div>
+                </a>
+              ) : (
+                <div className="flex items-center gap-3 p-4">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-50">
+                    <Music className="h-5 w-5 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">여행 Playlist</p>
+                    <p className="font-medium">{intro.playlist}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
         {intro.promise_to_team && (
-          <Card>
+          <Card className="transition hover:shadow-md">
             <CardContent className="flex items-center gap-3 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent/20">
                 <Target className="h-5 w-5 text-accent-foreground" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">이것만은 지킬 수 있다!</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">이것만은 지킬 수 있다!</p>
                 <p className="font-bold text-primary">{intro.promise_to_team}</p>
               </div>
             </CardContent>

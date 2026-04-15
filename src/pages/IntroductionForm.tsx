@@ -254,8 +254,8 @@ export default function IntroductionForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>여행 Playlist *</Label>
-              <Input value={form.playlist} onChange={(e) => updateField('playlist', e.target.value)} required placeholder="블랙핑크 - 뛰어" />
+              <Label>여행 Playlist * (YouTube 링크 붙여넣으면 클릭 가능)</Label>
+              <Input value={form.playlist} onChange={(e) => updateField('playlist', e.target.value)} required placeholder="https://youtube.com/playlist?list=... 또는 블랙핑크 - 뛰어" />
             </div>
             <div className="space-y-2">
               <Label>조원들에게 '이것만은 지킬 수 있다!' *</Label>
