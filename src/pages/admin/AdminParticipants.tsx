@@ -59,18 +59,37 @@ export default function AdminParticipants() {
       const { error } = await supabase.from('participants').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['participants'] });
-      toast.success('삭제되었습니다');
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['participants'] });
+      const prev = queryClient.getQueryData<any[]>(['participants']) || [];
+      queryClient.setQueryData(['participants'], prev.filter((p) => p.id !== id));
+      return { prev };
+    },
+    onSuccess: () => toast.success('삭제되었습니다'),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['participants'], ctx.prev);
+      toast.error((e as Error).message);
     },
   });
 
   const updateField = useMutation({
-    mutationFn: async ({ id, field, value }: { id: string; field: string; value: string | number }) => {
+    mutationFn: async ({ id, field, value }: { id: string; field: string; value: string | number | null }) => {
       const { error } = await supabase.from('participants').update({ [field]: value }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['participants'] }),
+    onMutate: async ({ id, field, value }) => {
+      await queryClient.cancelQueries({ queryKey: ['participants'] });
+      const prev = queryClient.getQueryData<any[]>(['participants']) || [];
+      queryClient.setQueryData(
+        ['participants'],
+        prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
+      );
+      return { prev };
+    },
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['participants'], ctx.prev);
+      toast.error((e as Error).message);
+    },
   });
 
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {

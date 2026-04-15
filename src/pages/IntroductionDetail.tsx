@@ -72,36 +72,70 @@ export default function IntroductionDetail() {
         await supabase.from('introduction_likes').insert({ introduction_id: id!, user_id: user.id });
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['likes', id] }),
-    onError: (e) => toast.error(e.message),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['likes', id] });
+      const prev = queryClient.getQueryData<any[]>(['likes', id]) || [];
+      const next = isLiked
+        ? prev.filter((l) => l.user_id !== user?.id)
+        : [...prev, { introduction_id: id, user_id: user?.id }];
+      queryClient.setQueryData(['likes', id], next);
+      return { prev };
+    },
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['likes', id], ctx.prev);
+      toast.error(e.message);
+    },
   });
 
   const addComment = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (content: string) => {
       if (!user) throw new Error('로그인이 필요합니다');
-      if (!comment.trim()) return;
       await supabase.from('introduction_comments').insert({
         introduction_id: id!,
         user_id: user.id,
-        content: comment.trim(),
+        content,
       });
     },
-    onSuccess: () => {
+    onMutate: async (content: string) => {
+      await queryClient.cancelQueries({ queryKey: ['comments', id] });
+      const prev = queryClient.getQueryData<any[]>(['comments', id]) || [];
+      const myProfile = prev.find((c) => c.user_id === user?.id)?.profiles;
+      const optimistic = {
+        id: `tmp-${Date.now()}`,
+        introduction_id: id,
+        user_id: user?.id,
+        content,
+        created_at: new Date().toISOString(),
+        profiles: myProfile || { display_name: '나', avatar_url: null },
+      };
+      queryClient.setQueryData(['comments', id], [...prev, optimistic]);
       setComment('');
+      return { prev };
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', id] });
       queryClient.invalidateQueries({ queryKey: ['comment-counts'] });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['comments', id], ctx.prev);
+      toast.error(e.message);
+    },
   });
 
   const deleteComment = useMutation({
     mutationFn: async (commentId: string) => {
       await supabase.from('introduction_comments').delete().eq('id', commentId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', id] });
-      queryClient.invalidateQueries({ queryKey: ['comment-counts'] });
+    onMutate: async (commentId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['comments', id] });
+      const prev = queryClient.getQueryData<any[]>(['comments', id]) || [];
+      queryClient.setQueryData(['comments', id], prev.filter((c) => c.id !== commentId));
+      return { prev };
     },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['comments', id], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['comment-counts'] }),
   });
 
   const deleteIntroduction = useMutation({
@@ -375,7 +409,7 @@ export default function IntroductionDetail() {
                 placeholder="댓글을 남겨보세요..."
                 className="min-h-[60px]"
               />
-              <Button size="icon" onClick={() => addComment.mutate()} disabled={!comment.trim()}>
+              <Button size="icon" onClick={() => addComment.mutate(comment.trim())} disabled={!comment.trim()}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>
